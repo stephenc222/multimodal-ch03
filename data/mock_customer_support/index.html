@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Ticket Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #333;
+            padding: 20px;
+            z-index: 1000;
+            display: none;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .error-message {
+            background-color: #ff4444;
+            color: white;
+            font-size: 40px;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        .success-message {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 40px;
+            animation: rainbow 2s linear infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-20px); }
+            75% { transform: translateX(20px); }
+        }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .close-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: black;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <form id="supportTicketForm" class="bg-white p-8 rounded-lg shadow-md w-full max-w-lg" autocomplete="off">
+        <h2 class="text-2xl font-bold mb-6 text-center">Customer Support Ticket</h2>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your Name" class="w-full p-3 border rounded" autocomplete="off">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Your Email" class="w-full p-3 border rounded" autocomplete="off">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="Your Phone Number" class="w-full p-3 border rounded" autocomplete="off">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="orderNumber">Order Number</label>
+            <input type="text" id="orderNumber" name="orderNumber" placeholder="Your Order Number" class="w-full p-3 border rounded" autocomplete="off">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="issueCategory">Issue Category</label>
+            <select id="issueCategory" name="issueCategory" class="w-full p-3 border rounded">
+                <option value="" disabled selected>Select a category</option>
+                <option value="Technical">Technical</option>
+                <option value="Billing">Billing</option>
+                <option value="General">General</option>
+                <option value="Shipping">Shipping/Delivery</option>
+                <option value="Account">Account</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="description">Issue Description</label>
+            <textarea id="description" name="description" placeholder="Describe your issue in detail..." class="w-full p-3 border rounded h-32"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 mb-2" for="priority">Priority Level</label>
+            <select id="priority" name="priority" class="w-full p-3 border rounded">
+                <option value="" disabled selected>Select priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">Submit Ticket</button>
+    </form>
+
+    <div id="modal" class="modal relative flex flex-col items-center">
+        <div class="z-10 w-full text-right cursor-pointer" id="closeIcon">✖</div>
+        <div id="modalContent"></div>
+    </div>
+
+    <script>
+        document.getElementById('supportTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            let isComplete = true;
+            
+            for (let [key, value] of formData.entries()) {
+                if (!value.trim()) {
+                    isComplete = false;
+                    break;
+                }
+            }
+
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+
+            if (!isComplete) {
+                modalContent.innerHTML = `
+                    <div class="error-message p-4">
+                        <div>🚫 ERROR!!! 🚫</div>
+                        <div>Please fill out all required fields.</div>
+                    </div>
+                `;
+            } else {
+                const phone = formData.get('phone');
+                const prettyPhone = phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                modalContent.innerHTML = `
+                    <div class="success-message p-4">
+                        <div>✅ SUCCESS!!! ✅</div>
+                        <div>Your support ticket has been submitted.</div>
+                        <div>Phone Number: ${prettyPhone}</div>
+                    </div>
+                `;
+                e.target.reset();
+            }
+
+            modal.style.display = 'block';
+
+            document.getElementById('closeIcon').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        });
+
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 3 && value.length <= 6) {
+                value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+            } else if (value.length > 6) {
+                value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html> 
